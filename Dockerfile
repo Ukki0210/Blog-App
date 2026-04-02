@@ -50,10 +50,9 @@ COPY --from=backend-build /app/publish .
 # Copy built frontend into wwwroot so ASP.NET serves it as static files
 COPY --from=frontend-build /app/frontend/dist ./wwwroot
 
-# Render assigns PORT via environment variable
-ENV ASPNETCORE_URLS=http://+:${PORT:-10000}
 ENV ASPNETCORE_ENVIRONMENT=Production
 
 EXPOSE 10000
 
-ENTRYPOINT ["dotnet", "LifestyleBlog.dll"]
+# Use CMD with shell so $PORT is evaluated at container runtime (Render injects it)
+CMD ASPNETCORE_URLS="http://+:${PORT:-10000}" dotnet LifestyleBlog.dll
