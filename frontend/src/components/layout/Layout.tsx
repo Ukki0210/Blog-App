@@ -4,7 +4,6 @@ import { Search, Moon, Sun, Menu, X, PenLine, LayoutDashboard } from 'lucide-rea
 import { useAuthStore } from '../../lib/store'
 import { CATEGORIES } from '../../types'
 import ChatWidget from '../chat/ChatWidget'
-import NewsletterBanner from '../ui/NewsletterBanner'
 
 interface LayoutProps {
   darkMode: boolean
@@ -134,9 +133,6 @@ export default function Layout({ darkMode, toggleDark }: LayoutProps) {
       <main className="flex-1">
         <Outlet />
       </main>
-
-      {/* Newsletter */}
-      <NewsletterBanner />
 
       {/* Footer */}
       <footer className="border-t mt-20" style={{ borderColor: 'var(--border)' }}>
