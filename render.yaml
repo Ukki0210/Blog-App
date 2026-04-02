@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: lifestyle-blog
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    # Render auto-assigns PORT env var — the Dockerfile reads it
+    envVars:
+      # ── Supabase ──────────────────────────────────────────────────────────
+      - key: ConnectionStrings__Supabase
+        sync: false   # set manually in Render dashboard
+
+      - key: Supabase__Url
+        sync: false
+
+      - key: Supabase__AnonKey
+        sync: false
+
+      - key: Supabase__JwtSecret
+        sync: false
+
+      # ── Groq ──────────────────────────────────────────────────────────────
+      - key: Groq__ApiKey
+        sync: false
+
+      - key: Groq__Model
+        value: llama-3.3-70b-versatile
+
+      # ── CORS — set to your Render URL once deployed ────────────────────────
+      # e.g. https://lifestyle-blog.onrender.com
+      - key: AllowedOrigins__0
+        sync: false
+
+      # ── Vite build-time env vars (baked into the React bundle) ────────────
+      - key: VITE_SUPABASE_URL
+        sync: false
+
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false

@@ -1,0 +1,22 @@
+# Node
+frontend/node_modules/
+frontend/.env.local
+frontend/.env
+frontend/dist/
+
+# .NET
+backend/LifestyleBlog/bin/
+backend/LifestyleBlog/obj/
+
+# Secrets — never bake into image
+backend/LifestyleBlog/appsettings.json
+backend/LifestyleBlog/appsettings.Development.json
+
+# Git
+.git/
+.gitignore
+
+# Misc
+*.md
+.DS_Store
+Thumbs.db

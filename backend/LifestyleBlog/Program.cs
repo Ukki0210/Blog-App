@@ -48,7 +48,6 @@ try
     var jwksUrl = $"{supabaseUrl}/auth/v1/.well-known/jwks.json";
     var jwksJson = await http.GetStringAsync(jwksUrl);
     Console.WriteLine($"[JWKS] Loaded from {jwksUrl}");
-    Console.WriteLine($"[JWKS] Content: {jwksJson}");
 
     var jwks = JsonSerializer.Deserialize<JsonElement>(jwksJson);
     if (jwks.TryGetProperty("keys", out var keys))
@@ -95,7 +94,6 @@ try
                     });
                     var rsaKey = new RsaSecurityKey(rsa) { KeyId = kid };
                     signingKeys.Add(rsaKey);
-                    Console.WriteLine($"[JWKS] Parsed RSA key kid={kid}");
                 }
             }
         }
@@ -107,8 +105,6 @@ catch (Exception ex)
 }
 
 Console.WriteLine($"[JWT] Total signing keys loaded: {signingKeys.Count}");
-foreach (var k in signingKeys)
-    Console.WriteLine($"[JWT]   key type={k.GetType().Name} id={k.KeyId}");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -119,9 +115,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKeys = signingKeys,
             IssuerSigningKeyResolver = (token, securityToken, kid, parameters) =>
             {
-                Console.WriteLine($"[JWT] Resolving keys for kid='{kid}', alg hint from token header");
-                if (string.IsNullOrEmpty(kid))
-                    return signingKeys;
+                if (string.IsNullOrEmpty(kid)) return signingKeys;
                 var matched = signingKeys.Where(k => k.KeyId == kid).ToList();
                 return matched.Count > 0 ? matched : signingKeys;
             },
@@ -153,7 +147,8 @@ builder.Services.AddSingleton<DatabaseService>();
 builder.Services.AddScoped<PostService>();
 builder.Services.AddScoped<CommentService>();
 builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<AuditService>();   // ← THIS LINE WAS MISSING
+builder.Services.AddScoped<AuditService>();
+
 // RAG service
 builder.Services.AddHttpClient<RagService>(client =>
 {
@@ -163,7 +158,7 @@ builder.Services.AddHttpClient<RagService>(client =>
 // AI Writing Assistant service
 builder.Services.AddHttpClient<AiWriteService>(client =>
 {
-    client.Timeout = TimeSpan.FromSeconds(90); // article generation can take ~20-30s
+    client.Timeout = TimeSpan.FromSeconds(90);
 });
 
 builder.Services.AddHttpClient<ChatbotService>(client =>
@@ -175,16 +170,7 @@ builder.Services.AddHttpClient<ChatbotService>(client =>
 var app = builder.Build();
 
 var dbService = app.Services.GetRequiredService<DatabaseService>();
-try
-{
-    await dbService.InitializeAsync();
-    Console.WriteLine("Database initialized successfully.");
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"Warning: Could not initialize database at startup: {ex.Message}");
-    Console.WriteLine("App will continue - database will connect on first request.");
-}
+await dbService.InitializeAsync();
 
 if (app.Environment.IsDevelopment())
 {
@@ -192,11 +178,21 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// app.UseHttpsRedirection(); // disabled for local dev
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
+
+// ── Serve React static files from wwwroot ─────────────────────────────────────
+// This serves the built frontend (index.html, JS, CSS, assets)
+app.UseDefaultFiles();        // serves index.html for "/"
+app.UseStaticFiles();         // serves files from wwwroot/
+
+// ── API routes ────────────────────────────────────────────────────────────────
 app.MapControllers();
+
+// ── SPA fallback — send all non-API routes to React's index.html ──────────────
+// This makes React Router work for URLs like /post/my-article, /write, /auth etc.
+app.MapFallbackToFile("index.html");
 
 app.Run();
 
