@@ -52,7 +52,7 @@ COPY --from=frontend-build /app/frontend/dist ./wwwroot
 
 ENV ASPNETCORE_ENVIRONMENT=Production
 
-EXPOSE 10000
+EXPOSE 8080
 
 # Use CMD with shell so $PORT is evaluated at container runtime (Render injects it)
-CMD ASPNETCORE_URLS="http://+:${PORT:-10000}" dotnet LifestyleBlog.dll
+CMD ASPNETCORE_URLS="http://+:${PORT:-8080}" dotnet LifestyleBlog.dll
