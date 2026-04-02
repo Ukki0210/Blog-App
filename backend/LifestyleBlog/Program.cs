@@ -170,7 +170,15 @@ builder.Services.AddHttpClient<ChatbotService>(client =>
 var app = builder.Build();
 
 var dbService = app.Services.GetRequiredService<DatabaseService>();
-await dbService.InitializeAsync();
+try
+{
+    await dbService.InitializeAsync();
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Warning: Could not initialize database at startup: {ex.Message}");
+    Console.WriteLine("App will continue - database will connect on first request.");
+}
 
 if (app.Environment.IsDevelopment())
 {
