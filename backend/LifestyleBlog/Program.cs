@@ -177,7 +177,7 @@ var app = builder.Build();
 var dbService = app.Services.GetRequiredService<DatabaseService>();
 try
 {
-    await databaseService.InitializeAsync();
+    await dbService.InitializeAsync();
     Console.WriteLine("Database initialized successfully.");
 }
 catch (Exception ex)
